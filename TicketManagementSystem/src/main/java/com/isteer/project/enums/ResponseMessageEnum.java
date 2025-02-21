@@ -10,7 +10,17 @@ public enum ResponseMessageEnum {
 	
 	ADD_NEW_ROLE(1004, "New role added successfully"),
 	
-	REMOVE_EXISTING_ROLE(1005,"Existing role removed successfully");
+	REMOVE_EXISTING_ROLE(1005,"Existing role removed successfully"),
+	
+	ADD_URL_FOR_DYNAMIC_RBAC(1006, "Url added successfully"),
+	
+	REMOVE_URL_FROM_DYNAMIC_RBAC(1007, "Url removed successfully"),
+	
+	TICKET_RAISED_SUCCESS(1008, "Ticket raised successfully"),
+	
+	ASSIGNED_TICKET_TO_ADMIN(1009, "Ticket is assigned to a admin successfully"),
+	
+	STATUS_SET_SUCCESSFULLY(1010,"Ticket status is updated successfully");
 
 	int responseCode;
 	String responseMessage;
