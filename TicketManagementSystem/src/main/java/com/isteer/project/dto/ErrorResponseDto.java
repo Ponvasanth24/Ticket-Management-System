@@ -6,7 +6,6 @@ public class ErrorResponseDto {
 	private String errorMessage;
 	
 	public ErrorResponseDto(int errorCode, String errorMessage) {
-		super();
 		this.errorCode = errorCode;
 		this.errorMessage = errorMessage;
 	}

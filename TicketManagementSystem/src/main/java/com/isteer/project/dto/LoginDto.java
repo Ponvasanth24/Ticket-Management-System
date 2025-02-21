@@ -6,6 +6,11 @@ public class LoginDto {
 	private String token = null;
 	private String message;
 	
+	public LoginDto(String userName, String token, String message) {
+		this.userName = userName;
+		this.token = token;
+		this.message = message;
+	}
 	public String getUserName() {
 		return userName;
 	}
