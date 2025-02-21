@@ -20,7 +20,27 @@ public enum ResponseMessageEnum {
 	
 	ASSIGNED_TICKET_TO_ADMIN(1009, "Ticket is assigned to a admin successfully"),
 	
-	STATUS_SET_SUCCESSFULLY(1010,"Ticket status is updated successfully");
+	STATUS_SET_SUCCESSFULLY(1010,"Ticket status is updated successfully"),
+	
+	USER_IS_NOT_REGISTERED(9001, "User is not registered"),
+	
+	ROLE_NOT_ELEVATED(9002, "Role elevation failed"),
+	
+	ROLE_NOT_DEMOTED(9003, "Role demotion failed"),
+	
+	ADDING_NEW_ROLE_FAILED(9004, "Adding new roles is failed"),
+	
+	REMOVING_EXISTING_ROLE_FAILED(9005, "Removing existing role failed"),
+	
+	ADDING_URL_FOR_DYNAMIC_RBAC_FAILED(9006, "Adding new url for dynamic RBAC failed"),
+	
+	REMOVING_URL_FROM_DYNAMIC_RBAC_FAILED(9007, "Removing url form dynamic RBAC failed"),
+	
+	TICKET_RAISING_FAILED(9008,"Ticket raisng failed"),
+	
+	ASSIGNING_TICKET_TO_ADMIN_FAILED(9009, "Assigning ticket to a admin failed"),
+	
+	TICKET_STATUS_UPDATE_FAILED(9010, "Ticket status update failed");
 
 	int responseCode;
 	String responseMessage;
