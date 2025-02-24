@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,14 +20,16 @@ import com.isteer.project.enums.ResponseMessageEnum;
 import com.isteer.project.service.TicketManagementService;
 
 @RestController
+@RequestMapping("tms")
 public class TicketManagementSystemController {
 
 	@Autowired
 	TicketManagementService service;
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PostMapping("raiseTicket")
+	@PostMapping("user/raiseTicket")
 	public ResponseEntity<?> raiseTicket(@RequestBody TicketManagementSystem ticket) {
+		System.out.println("controller");
 		int status = service.raiseTicket(ticket);
 		if(status > 0) {
 			SuccessResponseDto response = new SuccessResponseDto(ResponseMessageEnum.TICKET_RAISED_SUCCESS.getResponseCode(), ResponseMessageEnum.TICKET_RAISED_SUCCESS.getResponseMessage());
@@ -36,7 +39,7 @@ public class TicketManagementSystemController {
 		return ResponseEntity.badRequest().body(response);	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@GetMapping("getTickets")
+	@GetMapping("user/getTickets")
 	public List<?> ticketsForUser() {
 		List<TicketManagementSystem> tickets = service.getTicketsByUser();
 		return tickets;
@@ -50,7 +53,7 @@ public class TicketManagementSystemController {
 	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PostMapping("assign")
+	@PostMapping("admin/assign")
 	public ResponseEntity<?> assignTicket(@RequestParam int ticketId, String assignTo) {
 		int status = service.assignTicketTo(ticketId, assignTo);
 		if(status > 0) {
@@ -61,8 +64,8 @@ public class TicketManagementSystemController {
 		return ResponseEntity.badRequest().body(response);	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PatchMapping("setStatus")
-	public ResponseEntity<?> setTicketStatus(Integer ticketId, String ticketStatus) {
+	@PatchMapping("admin/setStatus")
+	public ResponseEntity<?> setTicketStatus(@RequestParam int ticketId, String ticketStatus) {
 		int status = service.updateTicketStatus(ticketId, ticketStatus);
 		if(status > 0) {
 			SuccessResponseDto response = new SuccessResponseDto(ResponseMessageEnum.STATUS_SET_SUCCESSFULLY.getResponseCode(), ResponseMessageEnum.STATUS_SET_SUCCESSFULLY.getResponseMessage());

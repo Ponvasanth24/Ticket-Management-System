@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,7 +45,7 @@ public class UserSecurityController {
 		return ResponseEntity.badRequest().body(response);
 	}
 	
-	@PostMapping("login")
+	@GetMapping("login")
 	public ResponseEntity<?> loginUser() {
 		String userName = SecurityContextHolder.getContext().getAuthentication().getName();
 		String token = userService.loginUser(userName);
@@ -57,7 +58,7 @@ public class UserSecurityController {
 	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PostMapping("elevateUser")
+	@PostMapping("admin/elevateUser")
 	public ResponseEntity<?> elevateUser(@RequestBody AssignOrRemoveRoleDto userName) {
 		int status = userService.eleveateUser(userName);
 		if(status > 0) {
@@ -68,7 +69,7 @@ public class UserSecurityController {
 		return ResponseEntity.badRequest().body(response);	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PostMapping("demote")
+	@PostMapping("admin/demoteUser")
 	public ResponseEntity<?> removeUserRole(@RequestBody AssignOrRemoveRoleDto userName) {
 		int status = userService.removeUserRole(userName);
 		if(status > 0) {
@@ -79,7 +80,7 @@ public class UserSecurityController {
 		return ResponseEntity.badRequest().body(response);	}
 	
 	@PreAuthorize("@permissionService.hasPermission()")
-	@PutMapping("addRole")
+	@PutMapping("superAdmin/addRole")
 	public ResponseEntity<?> addRole(@RequestParam String newRole) {
 		int status = roleService.addRole(newRole);
 		if(status > 0) {
@@ -89,10 +90,10 @@ public class UserSecurityController {
 		ErrorResponseDto response = new ErrorResponseDto(ResponseMessageEnum.ADDING_NEW_ROLE_FAILED.getResponseCode(), ResponseMessageEnum.ADDING_NEW_ROLE_FAILED.getResponseMessage());
 		return ResponseEntity.badRequest().body(response);	}
 	
-//	@PreAuthorize("@permissionService.hasPermission()")
-	@PutMapping("removeRole")
-	public ResponseEntity<?> removeRole(@RequestParam String newRole) {
-		int status = roleService.removeRole(newRole);
+	@PreAuthorize("@permissionService.hasPermission()")
+	@PutMapping("superAdmin/removeRole")
+	public ResponseEntity<?> removeRole(@RequestParam String removeRole) {
+		int status = roleService.removeRole(removeRole);
 		if(status > 0) {
 			SuccessResponseDto response = new SuccessResponseDto(ResponseMessageEnum.REMOVE_EXISTING_ROLE.getResponseCode(), ResponseMessageEnum.REMOVE_EXISTING_ROLE.getResponseMessage());
 			return ResponseEntity.ok(response);
@@ -100,7 +101,8 @@ public class UserSecurityController {
 		ErrorResponseDto response = new ErrorResponseDto(ResponseMessageEnum.REMOVING_EXISTING_ROLE_FAILED.getResponseCode(), ResponseMessageEnum.REMOVING_EXISTING_ROLE_FAILED.getResponseMessage());
 		return ResponseEntity.badRequest().body(response);	}
 	
-	@PostMapping("addUrl")
+	@PreAuthorize("@permissionService.hasPermission()")
+	@PostMapping("superAdmin/addUrl")
 	public ResponseEntity<?> addUrl(@RequestBody AddOrRemoveUrlDto url) {
 		int status = permissionService.addUrl(url);
 		if(status > 0) {
@@ -110,7 +112,8 @@ public class UserSecurityController {
 		ErrorResponseDto response = new ErrorResponseDto(ResponseMessageEnum.ADDING_URL_FOR_DYNAMIC_RBAC_FAILED.getResponseCode(), ResponseMessageEnum.ADDING_URL_FOR_DYNAMIC_RBAC_FAILED.getResponseMessage());
 		return ResponseEntity.badRequest().body(response);		}
 	
-	@PostMapping("removeUrl")
+	@PreAuthorize("@permissionService.hasPermission()")
+	@PostMapping("superAdmin/removeUrl")
 	public ResponseEntity<?> removeUrl(@RequestBody AddOrRemoveUrlDto url) {
 		int status = permissionService.removeUrl(url);
 		if(status > 0) {
