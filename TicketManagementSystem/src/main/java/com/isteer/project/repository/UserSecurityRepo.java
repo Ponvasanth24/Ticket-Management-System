@@ -3,6 +3,7 @@ package com.isteer.project.repository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -16,6 +17,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import com.isteer.project.entity.Roles;
 import com.isteer.project.entity.User;
 import com.isteer.project.utility.RolesRowMapper;
+
 
 @Component
 public class UserSecurityRepo {
@@ -32,9 +34,11 @@ public class UserSecurityRepo {
 		String roleQuery = "SELECT r.role_id, r.role FROM roles r INNER JOIN user_role ur ON r.role_id = ur.role_id WHERE ur.user_id = :userId";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userName", userName);
-		User user = namedParameterJdbcTemplate.queryForObject(userQuery, params, new BeanPropertyRowMapper<>(User.class));
-		if(user == null) {
-			throw new UsernameNotFoundException("User not found");
+		User user = null;
+		try {
+		user = namedParameterJdbcTemplate.queryForObject(userQuery, params, new BeanPropertyRowMapper<>(User.class));
+		} catch(EmptyResultDataAccessException e) {
+			return user;
 		}
 		params.addValue("userId", user.getUserId());
 		List<Roles> roles = namedParameterJdbcTemplate.query(roleQuery, params, new RolesRowMapper());
