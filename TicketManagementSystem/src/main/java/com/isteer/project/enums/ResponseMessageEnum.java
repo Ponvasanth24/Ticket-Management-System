@@ -40,7 +40,13 @@ public enum ResponseMessageEnum {
 	
 	ASSIGNING_TICKET_TO_ADMIN_FAILED(9009, "Assigning ticket to a admin failed"),
 	
-	TICKET_STATUS_UPDATE_FAILED(9010, "Ticket status update failed");
+	TICKET_STATUS_UPDATE_FAILED(9010, "Ticket status update failed"),
+	
+	USERNAME_NOT_FOUND_EXCEPTION(9011, "Please check the username."),
+	
+	ACCESS_DENIED_EXCEPTION(9012, "You dont have enough authorization to access this endpoint"),
+	
+	GLOBAL_EXCEPTION_HANDLER(9013, "Ooops!! You have encountered an error");
 
 	int responseCode;
 	String responseMessage;

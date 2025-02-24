@@ -3,6 +3,7 @@ package com.isteer.project.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.isteer.project.dto.AddOrRemoveUrlDto;
@@ -10,6 +11,7 @@ import com.isteer.project.entity.HttpMethodRolePermission;
 import com.isteer.project.entity.Permission;
 import com.isteer.project.entity.Roles;
 import com.isteer.project.entity.User;
+import com.isteer.project.enums.ResponseMessageEnum;
 import com.isteer.project.repository.PermissionRepo;
 import com.isteer.project.repository.RoleSecurityRepo;
 import com.isteer.project.repository.UserSecurityRepo;
@@ -32,7 +34,7 @@ public class PermissionService {
 		String userName = request.getUserPrincipal().getName();
 		String urlPattern = request.getRequestURI();
 		String httpMethod = request.getMethod();
-		
+
 		User user = userRepo.findByUserName(userName);
 		List<Permission> urlPermission = permissionRepo.findByUrlPattern(urlPattern);
 		List<HttpMethodRolePermission> methodPermission = permissionRepo.findHttpMethod(httpMethod);
@@ -51,7 +53,7 @@ public class PermissionService {
 						.anyMatch(roleId::equals));
 		if(urlPermissionStatus && methodPermissionStatus)
 			return true;
-		return false;
+		throw new AccessDeniedException(ResponseMessageEnum.ACCESS_DENIED_EXCEPTION.getResponseMessage());
 	}
 	
 	public int addUrl(AddOrRemoveUrlDto url) {
