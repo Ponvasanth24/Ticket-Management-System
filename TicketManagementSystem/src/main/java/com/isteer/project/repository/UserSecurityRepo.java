@@ -3,12 +3,12 @@ package com.isteer.project.repository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -16,6 +16,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.isteer.project.entity.Roles;
 import com.isteer.project.entity.User;
+import com.isteer.project.enums.ResponseMessageEnum;
+import com.isteer.project.exception.UserNameNotFoundException;
 import com.isteer.project.utility.RolesRowMapper;
 
 
@@ -47,20 +49,22 @@ public class UserSecurityRepo {
 	}
 
 	public int registerUser(User user) {
-		String insertUser = "INSERT INTO Users (user_name, password) VALUES (:userName, :password)";
-		String lastInsertedId = "SELECT LAST_INSERT_ID()";
+		String insertUser = "INSERT INTO Users (user_uuid,user_name, password, first_name, last_name, phone_number, email) VALUES (:userId, :userName, :password, :firstName, :lastName, :phoneNumber, :email)";
 		String assignUserRole = "INSERT INTO user_role (user_id, role_id) VALUES (:userId, :roleId)";
 		int sts = 0;
 		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("userId", user.getUserId());
 		params.addValue("userName", user.getUserName());
 		params.addValue("password", user.getPassword());
+		params.addValue("firstName", user.getFirstName());
+		params.addValue("lastName", user.getLastName());
+		params.addValue("phoneNumber", user.getPhoneNumber());
+		params.addValue("email", user.getEmail());
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
 			sts = namedParameterJdbcTemplate.update(insertUser, params);
-			int userId = jdbcTemplate.queryForObject(lastInsertedId, Integer.class);
-			params.addValue("userId", userId);
 			for (Roles role : user.getRoles()) {
-				int roleId = role.getRoleId();
+				String roleId = role.getRoleId();
 				params.addValue("roleId", roleId);
 				sts = namedParameterJdbcTemplate.update(assignUserRole, params);
 			}
@@ -72,7 +76,7 @@ public class UserSecurityRepo {
 		}
 	}
 
-	public int elevateRole(String userName, int roleId) {
+	public int elevateRole(String userName, String roleId) {
 		String finduserId = "SELECT user_id from Users WHERE user_name = :userName";
 		String elevateRole = "INSERT INTO user_role (user_id, role_id) VALUES (:userId, :roleId)";
 		int sts = 0;
@@ -80,19 +84,28 @@ public class UserSecurityRepo {
 		params.addValue("userName", userName);
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
-			int userId = namedParameterJdbcTemplate.queryForObject(finduserId, params, Integer.class);
+			System.out.println(".................");
+			String userId = namedParameterJdbcTemplate.queryForObject(finduserId, params, String.class);
+			System.out.println(userId.equals(null));
 			params.addValue("userId", userId);
 			params.addValue("roleId", roleId);
 			sts = namedParameterJdbcTemplate.update(elevateRole, params);
+			System.out.println(sts);
 			transactionManager.commit(status);
 			return sts;
+		} catch (EmptyResultDataAccessException e) {
+			transactionManager.rollback(status);
+			throw new UserNameNotFoundException(ResponseMessageEnum.USERNAME_NOT_FOUND_EXCEPTION);
+		} catch (DuplicateKeyException e) {
+			transactionManager.rollback(status);
+			throw new DuplicateKeyException(ResponseMessageEnum.DUPLICATE_KEY_EXCEPTION.getResponseMessage());
 		} catch (Exception e) {
 			transactionManager.rollback(status);
-			return 0;
+			throw new RuntimeException(ResponseMessageEnum.DUPLICATE_KEY_EXCEPTION.getResponseMessage());
 		}
 	}
 	
-	public int deleteRole(String userName, int roleId) {
+	public int deleteRole(String userName, String roleId) {
 		String finduserId = "SELECT user_id from Users WHERE user_name = :userName";
 		String deleteRole = "DELETE FROM user_role WHERE role_id = :roleId AND user_id = :userId";
 		int sts = 0;
@@ -100,16 +113,16 @@ public class UserSecurityRepo {
 		params.addValue("userName", userName);
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
-			int userId = namedParameterJdbcTemplate.queryForObject(finduserId, params, Integer.class);
+			String userId = namedParameterJdbcTemplate.queryForObject(finduserId, params, String.class);
 			params.addValue("userId", userId);
 			params.addValue("roleId", roleId);
 			sts = namedParameterJdbcTemplate.update(deleteRole, params);
 			transactionManager.commit(status);
 			return sts;
 		} catch (Exception e) {
-			transactionManager.rollback(status);
 			e.printStackTrace();
-			return 0;
+			transactionManager.rollback(status);
+			throw new UserNameNotFoundException(ResponseMessageEnum.USERNAME_NOT_FOUND_EXCEPTION);
 		}
 	}
 }

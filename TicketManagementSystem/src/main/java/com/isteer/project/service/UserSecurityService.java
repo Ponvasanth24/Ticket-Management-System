@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 import com.isteer.project.dto.AssignOrRemoveRoleDto;
 import com.isteer.project.entity.Roles;
 import com.isteer.project.entity.User;
+import com.isteer.project.enums.ResponseMessageEnum;
+import com.isteer.project.exception.RoleNotFoundException;
 import com.isteer.project.repository.RoleSecurityRepo;
 import com.isteer.project.repository.UserSecurityRepo;
 import com.isteer.project.utility.JwtUtil;
+import com.isteer.project.utility.UUIdGenerator;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,10 +29,14 @@ public class UserSecurityService {
 	JwtUtil jwtUtil;
 	@Autowired
 	HttpServletRequest request;
+	@Autowired
+	UUIdGenerator uuIdGenerator;
 	
 	public int registerUser(User user) {
+		user.setUserId("USR"+uuIdGenerator.generateShortID());
 		user.setPassword(new BCryptPasswordEncoder(12).encode(user.getPassword()));
 		List<Roles> roles = roleRepo.getAllRoles();
+		System.out.println(roles);
 		 user.setRoles(roles.stream().filter(r->r.getRole().equals("USER")).toList());
 		int status = userRepo.registerUser(user);
 		
@@ -42,32 +49,34 @@ public class UserSecurityService {
 		return token;
 	}
 	
-	public int eleveateUser(AssignOrRemoveRoleDto role) {
+	public int elevateUser(AssignOrRemoveRoleDto role) {
 		List<Roles> roles = roleRepo.getAllRoles();
-		int roleId = roles.stream()
+		String roleId = roles.stream()
 				.filter(
 						r->r.getRole()
 						.equalsIgnoreCase(role.getRole())
-						).mapToInt(Roles::getRoleId)
+						).map(Roles::getRoleId)
 				.findFirst()
-				.orElse(-1);
-		if(roleId == -1)
-			return 0;
+				.orElse("null");
+		if(roleId == "null") {
+			throw new RoleNotFoundException(ResponseMessageEnum.ROLE_NOT_FOUND_EXCEPTION);
+		}
 		int status = userRepo.elevateRole(role.getUserName(), roleId);
 		return status;
 	}
 	
 	public int removeUserRole(AssignOrRemoveRoleDto role) {
 		List<Roles> roles = roleRepo.getAllRoles();
-		int roleId = roles.stream()
+		String roleId = roles.stream()
 				.filter(
 						r->r.getRole()
 						.equalsIgnoreCase(role.getRole())
-						).mapToInt(Roles::getRoleId)
+						).map(Roles::getRoleId)
 				.findFirst()
-				.orElse(-1);
-		if(roleId == -1)
-			return 0;
+				.orElse("null");
+		if(roleId == "null") {
+			throw new RoleNotFoundException(ResponseMessageEnum.ROLE_NOT_FOUND_EXCEPTION);
+		}
 		int status = userRepo.deleteRole(role.getUserName(), roleId);
 		return status;
 	}
