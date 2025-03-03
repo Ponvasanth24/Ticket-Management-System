@@ -3,17 +3,17 @@ package com.isteer.project.entity;
 public class HttpMethodRolePermission {
 
 	private String httpMethod;
-	private int roleId;
+	private String roleId;
 	public String getHttpMethod() {
 		return httpMethod;
 	}
 	public void setHttpMethod(String httpMethod) {
 		this.httpMethod = httpMethod;
 	}
-	public int getRoleId() {
+	public String getRoleId() {
 		return roleId;
 	}
-	public void setRoleId(int roleId) {
+	public void setRoleId(String roleId) {
 		this.roleId = roleId;
 	}
 	@Override

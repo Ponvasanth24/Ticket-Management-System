@@ -11,7 +11,7 @@ public class PermissionRowMapper implements RowMapper<Permission> {
     public Permission mapRow(ResultSet rs, int rowNum) throws SQLException {
         Permission permission = new Permission();
         permission.setUrlPattern(rs.getString("url_pattern"));
-        permission.setRoleId(rs.getInt("role_id"));
+        permission.setRoleId(rs.getString("role_id"));
         return permission;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import com.isteer.project.dto.AddOrRemoveHttpMethodDto;
 import com.isteer.project.dto.AddOrRemoveUrlDto;
 import com.isteer.project.entity.HttpMethodRolePermission;
 import com.isteer.project.entity.Permission;
@@ -34,11 +35,9 @@ public class PermissionService {
 		String userName = request.getUserPrincipal().getName();
 		String urlPattern = request.getRequestURI();
 		String httpMethod = request.getMethod();
-
 		User user = userRepo.findByUserName(userName);
 		List<Permission> urlPermission = permissionRepo.findByUrlPattern(urlPattern);
 		List<HttpMethodRolePermission> methodPermission = permissionRepo.findHttpMethod(httpMethod);
-		
 		boolean urlPermissionStatus = user.getRoles()
 				.stream()
 				.map(Roles::getRoleId)
@@ -57,14 +56,26 @@ public class PermissionService {
 	}
 	
 	public int addUrl(AddOrRemoveUrlDto url) {
-		int roleId = roleRepo.getRoleId(url.getRole());
+		String roleId = roleRepo.getRoleId(url.getRole());
 		int status = permissionRepo.addUrl(url.getUrl(), roleId);
 		return status;
 	}
 	
 	public int removeUrl(AddOrRemoveUrlDto url) {
-		int roleId = roleRepo.getRoleId(url.getRole());
+		String roleId = roleRepo.getRoleId(url.getRole());
 		int status = permissionRepo.removeUrl(url.getUrl(), roleId);
+		return status;
+	}
+
+	public int addHttpMethod(AddOrRemoveHttpMethodDto method) {
+		String roleId = roleRepo.getRoleId(method.getRole());
+		int status = permissionRepo.addHttpMethod(method.getMethod(), roleId);
+		return status;
+	}
+
+	public int removeHttpMethod(AddOrRemoveHttpMethodDto httpMethod) {
+		String roleId = roleRepo.getRoleId(httpMethod.getRole());
+		int status = permissionRepo.removeHttpMethod(httpMethod.getMethod(), roleId);
 		return status;
 	}
 }

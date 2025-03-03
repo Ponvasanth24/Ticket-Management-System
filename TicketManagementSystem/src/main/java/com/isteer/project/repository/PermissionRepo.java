@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import com.isteer.project.entity.HttpMethodRolePermission;
 import com.isteer.project.entity.Permission;
+import com.isteer.project.enums.ResponseMessageEnum;
+import com.isteer.project.exception.HttpMethodNotFoundException;
+import com.isteer.project.exception.UrlNotFoundException;
 import com.isteer.project.utility.HttpMethodRolePermissionRowMapper;
 import com.isteer.project.utility.PermissionRowMapper;
 
@@ -33,7 +36,7 @@ public class PermissionRepo {
 		return permittedRoles;
 	}
 
-	public int addUrl(String url, int roleId) {
+	public int addUrl(String url, String roleId) {
 		String addUrl = "INSERT INTO permission(url_pattern, role_id) VALUES(:urlPattern, :roleId)";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("urlPattern", url);
@@ -42,12 +45,35 @@ public class PermissionRepo {
 		return status;
 	}
 	
-	public int removeUrl(String url, int roleId) {
+	public int removeUrl(String url, String roleId) {
 		String addUrl = "DELETE FROM permission WHERE url_pattern = :urlPattern AND role_id = :roleId";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("urlPattern", url);
 		params.addValue("roleId", roleId);
 		int status = namedParameterJdbcTemplate.update(addUrl, params);
+		if(status == 0) {
+			throw new UrlNotFoundException(ResponseMessageEnum.URL_NOT_FOUND_EXCEPTION);
+		}
+		return status;
+	}
+
+	public int addHttpMethod(String method, String roleId) {
+		String addHttpMethod = "INSERT INTO http_method_role_permission(http_method, role_id) VALUES(:method, :roleId)";
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("method", method);
+		params.addValue("roleId", roleId);
+		int status = namedParameterJdbcTemplate.update(addHttpMethod, params);
+		return status;
+	}
+
+	public int removeHttpMethod(String method, String roleId) {
+		String removeHttpMethod = "DELETE FROM http_method_role_permission WHERE http_method = :method AND role_id = :roleId";
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("method", method);
+		params.addValue("roleId", roleId);
+		int status = namedParameterJdbcTemplate.update(removeHttpMethod, params);
+		if(status == 0)
+			throw new HttpMethodNotFoundException(ResponseMessageEnum.HTTP_METHOD_NOT_FOUND_EXCEPTION);
 		return status;
 	}
 

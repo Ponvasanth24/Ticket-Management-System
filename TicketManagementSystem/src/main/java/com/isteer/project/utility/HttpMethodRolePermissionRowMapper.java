@@ -12,7 +12,7 @@ public class HttpMethodRolePermissionRowMapper implements RowMapper<HttpMethodRo
     public HttpMethodRolePermission mapRow(ResultSet rs, int rowNum) throws SQLException {
     	HttpMethodRolePermission permission = new HttpMethodRolePermission();
         permission.setHttpMethod(rs.getString("http_method"));
-        permission.setRoleId(rs.getInt("role_id"));
+        permission.setRoleId(rs.getString("role_id"));
         return permission;
     }
 }
