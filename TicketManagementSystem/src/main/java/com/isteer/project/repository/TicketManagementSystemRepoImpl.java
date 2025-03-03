@@ -50,12 +50,12 @@ public class TicketManagementSystemRepoImpl implements TicketManagementSystemRep
 	}
 	
 	@Override
-	public TicketManagementSystem getTicketById(String ticketId) {
+	public List<TicketManagementSystem> getTicketById(String ticketId) {
 		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system WHERE ticket_id = :ticketId";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ticketId", ticketId);
 		try {
-		TicketManagementSystem ticket = namedParameterJdbcTemplate.queryForObject(sql, params, rowMapper);
+		List<TicketManagementSystem> ticket = namedParameterJdbcTemplate.query(sql, params, rowMapper);
 		return ticket;
 		}
 		catch (EmptyResultDataAccessException e) {
@@ -87,18 +87,27 @@ public class TicketManagementSystemRepoImpl implements TicketManagementSystemRep
 	}
 
 	@Override
-	public List<TicketManagementSystem> getAssignedTickets(String adminName) {
-		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system WHERE assigned_to = :adminName AND ticket_status = 'Assigned'";
+	public List<TicketManagementSystem> getAllTickets() {
+		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system";
+		List<TicketManagementSystem> tickets = namedParameterJdbcTemplate.query(sql, rowMapper);
+		return tickets;
+	}
+
+	@Override
+	public List<TicketManagementSystem> getTicketByStatusForUser(String status, String userName) {
+		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system WHERE created_by = :userName AND ticket_status = :status";
 		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("adminName", adminName);
+		params.addValue("status", status);
+		params.addValue("userName", userName);
 		List<TicketManagementSystem> tickets = namedParameterJdbcTemplate.query(sql, params, rowMapper);
 		return tickets;
 	}
 
 	@Override
-	public List<TicketManagementSystem> getWorkingTickets(String adminName) {
-		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system WHERE assigned_to = :adminName AND ticket_status = 'working'";
+	public List<TicketManagementSystem> getTicketByStatusForAdmin(String status, String adminName) {
+		String sql = "SELECT ticket_id, created_by, ticket_heading, ticket_description, created_on, updated_on, ticket_status, assigned_to FROM ticketing_system WHERE assigned_to = :adminName AND ticket_status = :status";
 		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("status", status);
 		params.addValue("adminName", adminName);
 		List<TicketManagementSystem> tickets = namedParameterJdbcTemplate.query(sql, params, rowMapper);
 		return tickets;

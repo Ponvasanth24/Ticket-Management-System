@@ -3,9 +3,10 @@ package com.isteer.project.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,8 +45,27 @@ public class TicketManagementSystemController {
 
 	@PreAuthorize("@permissionService.hasPermission()")
 	@GetMapping("user/getTickets")
-	public ResponseEntity<?> ticketsForUser() {
-		List<TicketManagementSystem> tickets = service.getTicketsByUser();
+	public ResponseEntity<?> ticketsForUser(@RequestParam(required = false) String ticketId,
+			@RequestParam(required = false) List<String> statuses) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String userName = auth.getName();
+		boolean isUser = auth.getAuthorities().stream()
+				.anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("USER"));
+		boolean isParamsNull = (ticketId == null || ticketId.isEmpty()) && (statuses.isEmpty() || statuses == null);
+		List<TicketManagementSystem> tickets;
+		if (isParamsNull) {
+			if (isUser) {
+				tickets = service.getTicketsByUser();
+			} else {
+				tickets = service.getAllTickets();
+			}
+		} else {
+			if(isUser) {
+				tickets = service.getTicketsForUser(ticketId, statuses, userName);
+			} else {
+				tickets = service.getTicketsForAdmin(ticketId, statuses, userName);
+			}
+		}
 		if (tickets.isEmpty()) {
 			SuccessResponseDto response = new SuccessResponseDto(
 					ResponseMessageEnum.NO_TICKETS_FOUND_FOR_THE_USER.getResponseCode(),
@@ -53,19 +73,6 @@ public class TicketManagementSystemController {
 			return ResponseEntity.ok(response);
 		}
 		return ResponseEntity.ok(tickets);
-	}
-
-	@PreAuthorize("@permissionService.hasPermission()")
-	@GetMapping("getTicketDetails")
-	public ResponseEntity<?> ticketDetails(@RequestParam String ticketId) {
-		TicketManagementSystem ticket = service.getTicketByTicketId(ticketId);
-		if (ticket == null) {
-			ErrorResponseDto response = new ErrorResponseDto(
-					ResponseMessageEnum.NO_TICKET_FOUND_FOR_THE_TICKET_ID.getResponseCode(),
-					ResponseMessageEnum.NO_TICKET_FOUND_FOR_THE_TICKET_ID.getResponseMessage());
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-		}
-		return ResponseEntity.ok(ticket);
 	}
 
 	@PreAuthorize("@permissionService.hasPermission()")
@@ -99,31 +106,4 @@ public class TicketManagementSystemController {
 				ResponseMessageEnum.TICKET_ID_NOT_FOUND_EXCEPTION.getResponseMessage());
 		return ResponseEntity.badRequest().body(response);
 	}
-
-	@PreAuthorize("@permissionService.hasPermission()")
-	@GetMapping("admin/assignedTickets")
-	public ResponseEntity<?> getAssignedTickets() {
-		List<TicketManagementSystem> assignedTickets = service.getAssignedTickets();
-		if (assignedTickets.isEmpty()) {
-			SuccessResponseDto response = new SuccessResponseDto(
-					ResponseMessageEnum.NO_ASSIGNED_TICKETS_FOUND.getResponseCode(),
-					ResponseMessageEnum.NO_ASSIGNED_TICKETS_FOUND.getResponseMessage());
-			return ResponseEntity.ok(response);
-		}
-		return ResponseEntity.ok(assignedTickets);
-	}
-
-	@PreAuthorize("@permissionService.hasPermission()")
-	@GetMapping("admin/workingTickets")
-	public ResponseEntity<?> getWorkingTickets() {
-		List<TicketManagementSystem> workingTickets = service.getWorkingTickets();
-		if (workingTickets.isEmpty()) {
-			SuccessResponseDto response = new SuccessResponseDto(
-					ResponseMessageEnum.NO_WORKING_TICKETS_FOUND.getResponseCode(),
-					ResponseMessageEnum.NO_WORKING_TICKETS_FOUND.getResponseMessage());
-			return ResponseEntity.ok(response);
-		}
-		return ResponseEntity.ok(workingTickets);
-	}
-
 }

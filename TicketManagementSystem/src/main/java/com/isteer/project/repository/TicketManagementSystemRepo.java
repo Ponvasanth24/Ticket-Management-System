@@ -11,8 +11,9 @@ public interface TicketManagementSystemRepo {
 	public List<TicketManagementSystem> getTicketsByUser(String createdBy);
 	public int assignTicketTo(String ticketId, String assignTo);
 	public int updateTicketStatus(String ticketId, String ticketStatus);
-	public TicketManagementSystem getTicketById(String ticketId);
-	public List<TicketManagementSystem> getAssignedTickets(String adminName);
-	public List<TicketManagementSystem> getWorkingTickets(String adminName);
+	public List<TicketManagementSystem> getTicketById(String ticketId);
+	public List<TicketManagementSystem> getAllTickets();
+	public List<TicketManagementSystem> getTicketByStatusForUser(String status, String userName);
+	public List<TicketManagementSystem> getTicketByStatusForAdmin(String status, String userName);
 
 }

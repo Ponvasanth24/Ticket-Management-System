@@ -40,9 +40,35 @@ public class TicketManagementService {
 		return tickets;
 	}
 	
-	public TicketManagementSystem getTicketByTicketId(String ticketId) {
-		TicketManagementSystem ticket = ticketDao.getTicketById(ticketId);
-		return ticket;
+	public List<TicketManagementSystem> getAllTickets() {
+		List<TicketManagementSystem> tickets = ticketDao.getAllTickets();
+		return tickets;
+	}
+	
+	public List<TicketManagementSystem> getTicketsForUser(String ticketId, List<String> statuses, String userName) {
+		List<TicketManagementSystem> tickets = null;
+		if(ticketId != null && !(ticketId.isEmpty())) {
+			tickets = ticketDao.getTicketById(ticketId);
+		}
+		if(statuses != null && !statuses.isEmpty()) {
+			for (String status : statuses) {
+				tickets = ticketDao.getTicketByStatusForUser(status, userName);
+			}
+		}
+		return tickets;
+	}
+	
+	public List<TicketManagementSystem> getTicketsForAdmin(String ticketId, List<String> statuses, String adminName) {
+		List<TicketManagementSystem> tickets = null;
+		if(ticketId != null && !(ticketId.isEmpty())) {
+			tickets = ticketDao.getTicketById(ticketId);
+		}
+		if(statuses != null && !statuses.isEmpty()) {
+			for (String status : statuses) {
+				tickets = ticketDao.getTicketByStatusForAdmin(status, adminName);
+			}
+		}
+		return tickets;
 	}
 	
 	public int assignTicketTo(String ticketId, String assignTo) {
@@ -65,15 +91,4 @@ public class TicketManagementService {
 		return status;
 	}
 
-	public List<TicketManagementSystem> getAssignedTickets() {
-		String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-		List<TicketManagementSystem> tickets = ticketDao.getAssignedTickets(adminName);
-		return tickets;
-	}
-
-	public List<TicketManagementSystem> getWorkingTickets() {
-		String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
-		List<TicketManagementSystem> tickets = ticketDao.getWorkingTickets(adminName);
-		return tickets;
-	}
 }
