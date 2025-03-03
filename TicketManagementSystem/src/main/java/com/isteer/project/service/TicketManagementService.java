@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service;
 
 import com.isteer.project.entity.TicketManagementSystem;
 import com.isteer.project.entity.User;
+import com.isteer.project.enums.ResponseMessageEnum;
+import com.isteer.project.exception.AssignTicketToAdminException;
+import com.isteer.project.exception.UserNameNotFoundException;
 import com.isteer.project.repository.TicketManagementSystemRepo;
 import com.isteer.project.repository.UserSecurityRepo;
+import com.isteer.project.utility.UUIdGenerator;
 
 @Service
 public class TicketManagementService {
@@ -19,8 +23,11 @@ public class TicketManagementService {
 	TicketManagementSystemRepo ticketDao;
 	@Autowired
 	UserSecurityRepo userRepo;
+	@Autowired
+	UUIdGenerator shortIdGenerator;
 	
 	public int raiseTicket(TicketManagementSystem ticket) {
+		ticket.setTicketId("TKT"+shortIdGenerator.generateShortID());
 		ticket.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
 		ticket.setCreatedOn(LocalDateTime.now());
 		int status = ticketDao.raiseTicket(ticket);
@@ -33,15 +40,15 @@ public class TicketManagementService {
 		return tickets;
 	}
 	
-	public TicketManagementSystem getTicketByTicketId(Integer ticketId) {
+	public TicketManagementSystem getTicketByTicketId(String ticketId) {
 		TicketManagementSystem ticket = ticketDao.getTicketById(ticketId);
 		return ticket;
 	}
 	
-	public int assignTicketTo(Integer ticketId, String assignTo) {
+	public int assignTicketTo(String ticketId, String assignTo) {
 		User user = userRepo.findByUserName(assignTo);
 		if(user == null)
-			return 0;
+			throw new UserNameNotFoundException(ResponseMessageEnum.USERNAME_NOT_FOUND_EXCEPTION);
 		boolean roleStatus = false;
 		if(user.getRoles().size() == 1) {
 		roleStatus = user.getRoles().stream().anyMatch(role -> role.getRole().equalsIgnoreCase("User"));
@@ -50,11 +57,23 @@ public class TicketManagementService {
 		int status = ticketDao.assignTicketTo(ticketId, assignTo);
 		return status;
 	}
-		return 0;
+		throw new AssignTicketToAdminException(ResponseMessageEnum.ASSIGNING_TICKET_TO_USER_ERROR);
 	}
 	
-	public int updateTicketStatus(Integer ticketId, String ticketStatus) {
+	public int updateTicketStatus(String ticketId, String ticketStatus) {
 		int status = ticketDao.updateTicketStatus(ticketId, ticketStatus);
 		return status;
+	}
+
+	public List<TicketManagementSystem> getAssignedTickets() {
+		String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+		List<TicketManagementSystem> tickets = ticketDao.getAssignedTickets(adminName);
+		return tickets;
+	}
+
+	public List<TicketManagementSystem> getWorkingTickets() {
+		String adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+		List<TicketManagementSystem> tickets = ticketDao.getWorkingTickets(adminName);
+		return tickets;
 	}
 }

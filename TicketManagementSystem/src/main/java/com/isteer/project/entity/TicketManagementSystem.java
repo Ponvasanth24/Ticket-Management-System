@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class TicketManagementSystem {
 
-	private Integer ticketId;
+	private String ticketId;
 	private String createdBy;
 	private String ticketHeading;
 	private String ticketDescription;
@@ -13,10 +13,11 @@ public class TicketManagementSystem {
 	private String ticketStatus = "Opened";
 	private String assignedTo = "To be assigned";
 	
-	public Integer getTicketId() {
+	
+	public String getTicketId() {
 		return ticketId;
 	}
-	public void setTicketId(Integer ticketId) {
+	public void setTicketId(String ticketId) {
 		this.ticketId = ticketId;
 	}
 	public String getCreatedBy() {
