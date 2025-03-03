@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,6 +18,7 @@ import com.isteer.project.entity.User;
 import com.isteer.project.enums.ResponseMessageEnum;
 import com.isteer.project.exception.UserNameNotFoundException;
 import com.isteer.project.utility.RolesRowMapper;
+import com.isteer.project.utility.UsersRowMapper;
 
 
 @Component
@@ -32,13 +32,13 @@ public class UserSecurityRepo {
 	PlatformTransactionManager transactionManager;
 	
 	public User findByUserName(String userName) {
-		String userQuery = "SELECT user_id, user_name, password FROM users WHERE user_name = :userName";
+		String userQuery = "SELECT user_uuid, user_name, password, first_name, last_name, phone_number, email FROM users WHERE user_name = :userName";
 		String roleQuery = "SELECT r.role_id, r.role FROM roles r INNER JOIN user_role ur ON r.role_id = ur.role_id WHERE ur.user_id = :userId";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userName", userName);
 		User user = null;
 		try {
-		user = namedParameterJdbcTemplate.queryForObject(userQuery, params, new BeanPropertyRowMapper<>(User.class));
+		user = namedParameterJdbcTemplate.queryForObject(userQuery, params, new UsersRowMapper());
 		} catch(EmptyResultDataAccessException e) {
 			return user;
 		}
