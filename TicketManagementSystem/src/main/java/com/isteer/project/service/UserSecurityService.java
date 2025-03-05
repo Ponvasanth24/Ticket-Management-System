@@ -37,7 +37,6 @@ public class UserSecurityService {
 		user.setUserId("USR"+uuIdGenerator.generateShortID());
 		user.setPassword(new BCryptPasswordEncoder(12).encode(user.getPassword()));
 		List<Roles> roles = roleRepo.getAllRoles();
-		System.out.println(roles);
 		 user.setRoles(roles.stream().filter(r->r.getRole().equals("USER")).toList());
 		int status = userRepo.registerUser(user);
 		

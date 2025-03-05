@@ -33,7 +33,7 @@ public class UserSecurityRepo {
 	
 	public User findByUserName(String userName) {
 		String userQuery = "SELECT user_uuid, user_name, password, first_name, last_name, phone_number, email FROM users WHERE user_name = :userName";
-		String roleQuery = "SELECT r.role_id, r.role FROM roles r INNER JOIN user_role ur ON r.role_id = ur.role_id WHERE ur.user_id = :userId";
+		String roleQuery = "SELECT r.role_uuid, r.role FROM roles r INNER JOIN user_role ur ON r.role_uuid = ur.role_id WHERE ur.user_id = :userId";
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userName", userName);
 		User user = null;
@@ -84,13 +84,10 @@ public class UserSecurityRepo {
 		params.addValue("userName", userName);
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
-			System.out.println(".................");
 			String userId = namedParameterJdbcTemplate.queryForObject(finduserId, params, String.class);
-			System.out.println(userId.equals(null));
 			params.addValue("userId", userId);
 			params.addValue("roleId", roleId);
 			sts = namedParameterJdbcTemplate.update(elevateRole, params);
-			System.out.println(sts);
 			transactionManager.commit(status);
 			return sts;
 		} catch (EmptyResultDataAccessException e) {

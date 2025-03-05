@@ -6,16 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import com.isteer.project.dto.AddOrRemoveHttpMethodDto;
 import com.isteer.project.dto.AddOrRemoveUrlDto;
+import com.isteer.project.entity.HttpMethod;
 import com.isteer.project.entity.HttpMethodRolePermission;
 import com.isteer.project.entity.Permission;
 import com.isteer.project.entity.Roles;
+import com.isteer.project.entity.Urls;
 import com.isteer.project.entity.User;
 import com.isteer.project.enums.ResponseMessageEnum;
 import com.isteer.project.repository.PermissionRepo;
 import com.isteer.project.repository.RoleSecurityRepo;
 import com.isteer.project.repository.UserSecurityRepo;
+import com.isteer.project.utility.UUIdGenerator;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -30,6 +32,8 @@ public class PermissionService {
 	PermissionRepo permissionRepo;
 	@Autowired
 	HttpServletRequest request;
+	@Autowired
+	UUIdGenerator shortIdGenerator;
 	
 	public boolean hasPermission() {
 		String userName = request.getUserPrincipal().getName();
@@ -55,9 +59,11 @@ public class PermissionService {
 		throw new AccessDeniedException(ResponseMessageEnum.ACCESS_DENIED_EXCEPTION.getResponseMessage());
 	}
 	
-	public int addUrl(AddOrRemoveUrlDto url) {
-		String roleId = roleRepo.getRoleId(url.getRole());
-		int status = permissionRepo.addUrl(url.getUrl(), roleId);
+	public int addUrl(Urls url) {
+		url.setUrlid("URL" + shortIdGenerator.generateShortID());
+		List<Roles> roles = roleRepo.getAllRoles();
+		 url.setRoles(roles.stream().filter(r->r.getRole().equals("SUPER_ADMIN")).toList());
+		int status = permissionRepo.addUrl(url);
 		return status;
 	}
 	
@@ -67,15 +73,14 @@ public class PermissionService {
 		return status;
 	}
 
-	public int addHttpMethod(AddOrRemoveHttpMethodDto method) {
-		String roleId = roleRepo.getRoleId(method.getRole());
-		int status = permissionRepo.addHttpMethod(method.getMethod(), roleId);
+	public int addHttpMethod(HttpMethod method) {
+		method.setMethodId("MTD" + shortIdGenerator.generateShortID());
+		int status = permissionRepo.addHttpMethod(method);
 		return status;
 	}
 
-	public int removeHttpMethod(AddOrRemoveHttpMethodDto httpMethod) {
-		String roleId = roleRepo.getRoleId(httpMethod.getRole());
-		int status = permissionRepo.removeHttpMethod(httpMethod.getMethod(), roleId);
+	public int removeHttpMethod(HttpMethod httpMethod) {
+		int status = permissionRepo.removeHttpMethod(httpMethod);
 		return status;
 	}
 }
