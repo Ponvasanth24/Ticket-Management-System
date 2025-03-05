@@ -2,15 +2,15 @@ package com.isteer.project.entity;
 
 public class Permission {
 
-	private String urlPattern;
+	private String urlId;
 	private String roleId;
-	
-	public String getUrlPattern() {
-		return urlPattern;
+		
+	public String getUrlId() {
+		return urlId;
 	}
-	public void setUrlPattern(String urlPattern) {
-		this.urlPattern = urlPattern;
-	}	
+	public void setUrlId(String urlId) {
+		this.urlId = urlId;
+	}
 	public String getRoleId() {
 		return roleId;
 	}
@@ -19,6 +19,6 @@ public class Permission {
 	}
 	@Override
 	public String toString() {
-		return "Permission [urlPattern=" + urlPattern + ", roleId=" + roleId + "]";
+		return "Permission [urlId=" + urlId + ", roleId=" + roleId + "]";
 	}
 }

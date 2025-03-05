@@ -27,15 +27,19 @@ public class TicketManagementService {
 	UUIdGenerator shortIdGenerator;
 	
 	public int raiseTicket(TicketManagementSystem ticket) {
+		String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userRepo.findByUserName(userName);
 		ticket.setTicketId("TKT"+shortIdGenerator.generateShortID());
-		ticket.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+		ticket.setCreatedBy(user.getUserId());
 		ticket.setCreatedOn(LocalDateTime.now());
 		int status = ticketDao.raiseTicket(ticket);
 		return status;
 	}
 	
 	public List<TicketManagementSystem> getTicketsByUser() {
-		String createdBy = SecurityContextHolder.getContext().getAuthentication().getName();
+		String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userRepo.findByUserName(userName);
+		String createdBy = user.getUserId();
 		List<TicketManagementSystem> tickets = ticketDao.getTicketsByUser(createdBy);
 		return tickets;
 	}
